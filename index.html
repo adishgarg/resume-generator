@@ -4,38 +4,175 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resume Generator</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, textarea, button {
+            margin-top: 5px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+        }
+        button {
+            margin-top: 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .entry {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            input, textarea, button {
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Resume Generator</h1>
-    <form id="resumeForm" method="post">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required><br><br>
+    <div class="container">
+        <h1>Resume Generator</h1>
+        <form action="/generate-resume" method="post">
+            <h2>Personal Information</h2>
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required><br>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required><br>
+            <label for="phone">Phone:</label>
+            <input type="tel" id="phone" name="phone" required><br>
 
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required><br><br>
+            <h2>Education</h2>
+            <div id="education-section">
+                <div class="entry education-entry">
+                    <label for="institution">Institution:</label>
+                    <input type="text" id="institution" name="education[0][institution]" required><br>
+                    <label for="degree">Degree:</label>
+                    <input type="text" id="degree" name="education[0][degree]" required><br>
+                    <label for="fieldOfStudy">Field of Study:</label>
+                    <input type="text" id="fieldOfStudy" name="education[0][fieldOfStudy]" required><br>
+                    <label for="eduStartDate">Start Date:</label>
+                    <input type="date" id="eduStartDate" name="education[0][startDate]" required><br>
+                    <label for="eduEndDate">End Date:</label>
+                    <input type="date" id="eduEndDate" name="education[0][endDate]" required><br>
+                    <label for="notes">Notes:</label>
+                    <textarea id="notes" name="education[0][notes]"></textarea><br>
+                </div>
+            </div>
+            <button type="button" onclick="addEducation()">Add More Education</button><br>
 
-        <label for="phone">Phone:</label>
-        <input type="tel" id="phone" name="phone" required><br><br>
+            <h2>Experience</h2>
+            <div id="experience-section">
+                <div class="entry experience-entry">
+                    <label for="company">Company:</label>
+                    <input type="text" id="company" name="experience[0][company]" required><br>
+                    <label for="position">Position:</label>
+                    <input type="text" id="position" name="experience[0][position]" required><br>
+                    <label for="expStartDate">Start Date:</label>
+                    <input type="date" id="expStartDate" name="experience[0][startDate]" required><br>
+                    <label for="expEndDate">End Date:</label>
+                    <input type="date" id="expEndDate" name="experience[0][endDate]" required><br>
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="experience[0][description]"></textarea><br>
+                </div>
+            </div>
+            <button type="button" onclick="addExperience()">Add More Experience</button><br>
 
-        <label for="education">Education:</label><br>
-        <textarea id="education" name="education" rows="4" cols="50" required></textarea><br><br>
+            <h2>Skills</h2>
+            <label for="skills">Skills:</label>
+            <textarea id="skills" name="skills"></textarea><br>
 
-        <label for="experience">Experience:</label><br>
-        <textarea id="experience" name="experience" rows="4" cols="50" required></textarea><br><br>
+            <h2>Achievements</h2>
+            <label for="achievements">Achievements:</label>
+            <textarea id="achievements" name="achievements"></textarea><br>
 
-        <label for="skills">Skills:</label><br>
-        <textarea id="skills" name="skills" rows="4" cols="50" required></textarea><br><br>
-
-        <button type="button" onclick="submitForm('/generate-resume-docx')">Download as DOCX</button>
-        <button type="button" onclick="submitForm('/generate-resume-pdf')">Download as PDF</button>
-    </form>
+            <button type="submit">Generate Resume</button>
+        </form>
+    </div>
 
     <script>
-        function submitForm(action) {
-            const form = document.getElementById('resumeForm');
-            form.action = action;
-            form.submit();
+        let educationCount = 1;
+        let experienceCount = 1;
+
+        function addEducation() {
+            const educationSection = document.getElementById('education-section');
+            const newEducation = document.createElement('div');
+            newEducation.classList.add('entry', 'education-entry');
+            newEducation.innerHTML = `
+                <label for="institution">Institution:</label>
+                <input type="text" id="institution-${educationCount}" name="education[${educationCount}][institution]" required><br>
+                <label for="degree">Degree:</label>
+                <input type="text" id="degree-${educationCount}" name="education[${educationCount}][degree]" required><br>
+                <label for="fieldOfStudy">Field of Study:</label>
+                <input type="text" id="fieldOfStudy-${educationCount}" name="education[${educationCount}][fieldOfStudy]" required><br>
+                <label for="eduStartDate">Start Date:</label>
+                <input type="date" id="eduStartDate-${educationCount}" name="education[${educationCount}][startDate]" required><br>
+                <label for="eduEndDate">End Date:</label>
+                <input type="date" id="eduEndDate-${educationCount}" name="education[${educationCount}][endDate]" required><br>
+                <label for="notes">Notes:</label>
+                <textarea id="notes-${educationCount}" name="education[${educationCount}][notes]"></textarea><br>
+            `;
+            educationSection.appendChild(newEducation);
+            educationCount++;
+        }
+
+        function addExperience() {
+            const experienceSection = document.getElementById('experience-section');
+            const newExperience = document.createElement('div');
+            newExperience.classList.add('entry', 'experience-entry');
+            newExperience.innerHTML = `
+                <label for="company">Company:</label>
+                <input type="text" id="company-${experienceCount}" name="experience[${experienceCount}][company]" required><br>
+                <label for="position">Position:</label>
+                <input type="text" id="position-${experienceCount}" name="experience[${experienceCount}][position]" required><br>
+                <label for="expStartDate">Start Date:</label>
+                <input type="date" id="expStartDate-${experienceCount}" name="experience[${experienceCount}][startDate]" required><br>
+                <label for="expEndDate">End Date:</label>
+                <input type="date" id="expEndDate-${experienceCount}" name="experience[${experienceCount}][endDate]" required><br>
+                <label for="description">Description:</label>
+                <textarea id="description-${experienceCount}" name="experience[${experienceCount}][description]"></textarea><br>
+            `;
+            experienceSection.appendChild(newExperience);
+            experienceCount++;
         }
     </script>
 </body>
