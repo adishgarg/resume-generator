@@ -7,7 +7,7 @@ const app = express();
 const PORT = 3000;
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-
+import os from 'os';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 app.use(bodyParser.json());
@@ -167,11 +167,34 @@ app.post('/generate-resume', (req, res) => {
         ],
     });
 
+    const tempFilePath = path.join(os.tmpdir(), 'resume.docx');
+
     Packer.toBuffer(doc).then((buffer) => {
-        res.setHeader('Content-Disposition', 'attachment; filename=resume.docx');
-        res.send(buffer);
-    });
-});
+        // Write the buffer to a temporary file
+        fs.writeFile(tempFilePath, buffer, (err) => {
+            if (err) {
+                console.error('Error writing file:', err);
+                res.status(500).send('Internal Server Error');
+                return;
+            }
+    
+            // Set the headers and send the file
+            res.setHeader('Content-Disposition', 'attachment; filename=resume.docx');
+            res.sendFile(tempFilePath, (err) => {
+                if (err) {
+                    console.error('Error sending file:', err);
+                    res.status(500).send('Internal Server Error');
+                } else {
+                    // Delete the temporary file after sending
+                    fs.unlink(tempFilePath, (err) => {
+                        if (err) {
+                            console.error('Error deleting file:', err);
+                        }
+                    });
+                }
+            });
+        });
+    })});
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
