@@ -2,6 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import fs from 'fs';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
+import cors from 'cors';
 import path from 'path';
 const app = express();
 const PORT = 3000;
@@ -13,11 +14,8 @@ const __dirname = dirname(__filename);
 app.use(bodyParser.json());
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
+app.use(cors());
 
 app.post('/generate-resume', (req, res) => {
     const { name, email, phone, education, skills, achievements, experience } = req.body;
